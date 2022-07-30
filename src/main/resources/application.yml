@@ -1,0 +1,17 @@
+server:
+  port: 9090
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:D:/sqliteData/excel-import.db
+  jpa:
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 150MB
