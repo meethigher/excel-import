@@ -66,7 +66,13 @@ public class ExcelUtil {
      */
     public static String[] getExcelTitleCel(XSSFWorkbook xssfWorkbook) {
         XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
+        if (sheet == null) {
+            return new String[0];
+        }
         XSSFRow row = sheet.getRow(0);
+        if (row == null) {
+            return new String[0];
+        }
         String[] strArr = new String[row.getPhysicalNumberOfCells()];
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
             strArr[i] = row.getCell(i).getStringCellValue();

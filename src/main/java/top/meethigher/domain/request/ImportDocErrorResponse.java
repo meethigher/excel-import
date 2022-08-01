@@ -11,6 +11,10 @@ import java.util.List;
  */
 public class ImportDocErrorResponse {
 
+    private Integer success;
+
+    private Integer failure;
+
     /**
      * 错误集合。
      */
@@ -22,5 +26,21 @@ public class ImportDocErrorResponse {
 
     public void setError(List<String> error) {
         this.error = error;
+    }
+
+    public Integer getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(Integer success) {
+        this.success = success;
+    }
+
+    public Integer getFailure() {
+        return failure;
+    }
+
+    public void setFailure(Integer failure) {
+        this.failure = failure;
     }
 }

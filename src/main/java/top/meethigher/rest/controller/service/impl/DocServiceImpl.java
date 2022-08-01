@@ -59,17 +59,22 @@ public class DocServiceImpl implements DocService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ImportDocErrorResponse excelImport(MultipartFile file) throws WebCommonException, IOException {
-        log.info("start");
+        log.info("导入doc开始");
         //读取excel并校验excel版本、模板匹配
         ClassPathResource resource = new ClassPathResource("template/doc.xlsx");
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook(resource.getInputStream());
         xssfWorkbook = commonExcelService.verifyExcel(file, xssfWorkbook);
+        log.info("模板校验结束");
         //校验数据格式、校验业务数据(demo测试此处不做展示)
         XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
         ImportDocErrorResponse errorResponse = new ImportDocErrorResponse();
         List<Doc> list = new LinkedList<>();
         for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
             XSSFRow row = sheet.getRow(i);
+            if (row == null) {
+                errorResponse.getError().add(String.format("第 %s 行数据出现错误: 该行数据为空", i + 1));
+                continue;
+            }
             String id = ExcelUtil.getStringCel(row.getCell(0));
             String name = ExcelUtil.getStringCel(row.getCell(1));
             Double locLon = ExcelUtil.getDoubleCel(row.getCell(2));
@@ -89,9 +94,12 @@ public class DocServiceImpl implements DocService {
                 errorResponse.getError().add(String.format("第 %s 行数据出现错误: %s", i + 1, result.getErrorMsg()));
             }
         }
+        log.info("数据校验结束");
         //事务更新入库
         docRepository.saveAll(list);
-        log.info("end--正确数据{}条--打回数据{}条", list.size(), errorResponse.getError().size());
+        log.info("导入doc完成--正确数据{}条--打回数据{}条", list.size(), errorResponse.getError().size());
+        errorResponse.setFailure(errorResponse.getError().size());
+        errorResponse.setSuccess(list.size());
         return errorResponse;
     }
 
