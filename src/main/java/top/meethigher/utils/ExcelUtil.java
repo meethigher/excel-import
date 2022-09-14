@@ -75,7 +75,7 @@ public class ExcelUtil {
         }
         String[] strArr = new String[row.getPhysicalNumberOfCells()];
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
-            strArr[i] = row.getCell(i).getStringCellValue();
+            strArr[i] = getStringCel(row.getCell(i));
         }
         return strArr;
     }
