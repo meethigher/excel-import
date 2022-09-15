@@ -11,9 +11,10 @@ public enum ResponseEnum {
     FAILURE(10001, "失败"),
     PARAMS_CHECK_ERR(10002, "参数错误"),
     DOWN_TEMPLATE_ERR(10003, "下载模板失败"),
-    EXCEL_NOT_SUPPORT(10004, "不支持的excel格式"),
+    EXCEL_NOT_SUPPORT(10004, "不支持的excel扩展名"),
     EXCEL_VERIFY_FAIL(10005, "校验excel不通过"),
-    EXCEL_NOT_MATCH(10006, "上传excel与模板不匹配");
+    EXCEL_NOT_MATCH(10006, "上传excel与模板不匹配"),
+    EXCEL_CONTENT_ERROR(10007, "该文件不是excel");
 
     public final int code;
     public final String desc;

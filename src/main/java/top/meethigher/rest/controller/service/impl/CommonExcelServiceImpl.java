@@ -38,8 +38,14 @@ public class CommonExcelServiceImpl implements CommonExcelService {
     @Override
     public XSSFWorkbook verifyExcel(MultipartFile file, XSSFWorkbook templateXssfWorkBook) throws WebCommonException, IOException {
         String originalFilename = file.getOriginalFilename();
+        //校验扩展名
         if (!ExcelUtil.isValidExcel(originalFilename)) {
             throw new WebCommonException(ResponseEnum.EXCEL_NOT_SUPPORT);
+        }
+        //校验文件内容格式,MultipartFile获取流是多例的
+        ExcelUtil.FileType fileType = ExcelUtil.isValidExcelType(file);
+        if (fileType == null) {
+            throw new WebCommonException(ResponseEnum.EXCEL_CONTENT_ERROR);
         }
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook(file.getInputStream());
         if (!ExcelUtil.isValidExcelCel(ExcelUtil.getExcelTitleCel(xssfWorkbook),
