@@ -220,7 +220,7 @@ public class MakeExcel implements Serializable{
 	    //创建一个专门用来存放地区信息的隐藏sheet页
 	    //因此也不能在现实页之前创建，否则无法隐藏。
 	    Sheet hideSheet = book.createSheet("site");
-	    book.setSheetHidden(book.getSheetIndex(hideSheet), true);
+	    book.setSheetHidden(book.getSheetIndex(hideSheet), false);
 
 	    int rowId = 0;
 	    // 设置第一行，存省的信息
@@ -289,7 +289,7 @@ public class MakeExcel implements Serializable{
 	  //创建一个专门用来存放地区信息的隐藏sheet页
 	    //因此也不能在现实页之前创建，否则无法隐藏。
 	    Sheet hideSheet2 = book.createSheet("site2");
-	    book.setSheetHidden(book.getSheetIndex(hideSheet2), true);
+	    book.setSheetHidden(book.getSheetIndex(hideSheet2), false);
 
 
 	    // 查询所有的订单类型名称
