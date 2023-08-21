@@ -33,6 +33,9 @@ public class TestExportExcelWithValidation {
         Map<String, List<String>> map = new HashMap<>();
         map.put("湖北省", Arrays.asList("武汉市", "襄阳市"));
         map.put("吉林省", Arrays.asList("长春市", "吉林市"));
+        for (int i = 0; i < 200; i++) {
+            map.put("吉林省" + i, Arrays.asList("长春市", "吉林市"));
+        }
         return map;
     }
 
@@ -46,11 +49,11 @@ public class TestExportExcelWithValidation {
     public static void main(String[] args) throws Exception {
         XSSFWorkbook wb = createOneXLSX();
         XSSFSheet st = addOneSheet(wb, "data", headers);
-        addDropDownListValidation(st, new String[]{"男", "女"}, 0, 0);
+        addSimpleDropDownListValidation(st, new String[]{"男", "女"}, 0, 0);
         addLinkageDataValidation(wb, st, 省级(), 1, 2, "B");
         addLinkageDataValidation(wb, st, 市级(), 2, 3, "C");
 
 
-        wb.write(new FileOutputStream("C:\\Users\\meethigher\\Desktop\\aaa.xlsx"));
+        wb.write(new FileOutputStream("aaa.xlsx"));
     }
 }

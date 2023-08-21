@@ -22,6 +22,8 @@ public class ExcelValidationUtils {
 
     private static final int maxRow = 100;
 
+    private static final boolean debugHideSheet = true;
+
 
     /**
      * 创建一个xlsx
@@ -65,11 +67,11 @@ public class ExcelValidationUtils {
 
 
     /**
-     * 添加链接数据验证
+     * 添加两层级联数据
      *
      * @param wb                  xlsx
      * @param targetSheet         目标sheet
-     * @param linkageData         链接数据
+     * @param linkageData         两层级联数据
      * @param parentCol           父列
      * @param childCol            孩子列
      * @param parentColIdentifier 父列标识符
@@ -78,7 +80,7 @@ public class ExcelValidationUtils {
     public static XSSFSheet addLinkageDataValidation(XSSFWorkbook wb, XSSFSheet targetSheet, Map<String, List<String>> linkageData,
                                                      int parentCol, int childCol, String parentColIdentifier) {
         XSSFSheet hideSt = wb.createSheet();
-        wb.setSheetHidden(wb.getSheetIndex(hideSt), true);
+        wb.setSheetHidden(wb.getSheetIndex(hideSt), !debugHideSheet);
         int rowId = 0;
         Set<String> keySet = linkageData.keySet();
         for (String parent : keySet) {
@@ -99,17 +101,27 @@ public class ExcelValidationUtils {
         //创建表达式校验
         XSSFDataValidationHelper helper = new XSSFDataValidationHelper(targetSheet);
 
-        //父级校验，如需生成更多，用户手动拖拽下拉即可
-        DataValidation parentValidation = helper.createValidation(helper.createExplicitListConstraint(keySet.toArray(new String[0])),
-                new CellRangeAddressList(minRow, maxRow, parentCol, parentCol));
+//        //父级校验，如需生成更多，用户手动拖拽下拉即可。此操作会导致数组内容总长度超过255时报错
+//        DataValidation parentValidation = helper.createValidation(helper.createExplicitListConstraint(keySet.toArray(new String[0])),
+//                new CellRangeAddressList(minRow, maxRow, parentCol, parentCol));
+//        parentValidation.createErrorBox("错误", "请选择正确的父级类型");
+//        parentValidation.setShowErrorBox(true);
+//        parentValidation.setSuppressDropDownArrow(true);
+//        targetSheet.addValidationData(parentValidation);
+
+        //解决长度为255的问题
+        Name name = wb.createName();
+        name.setNameName(hideSt.getSheetName());
+        name.setRefersToFormula(hideSt.getSheetName() + "!$A$1:$A$" + keySet.size());
+        DataValidation parentValidation = helper.createValidation(helper.createFormulaListConstraint(hideSt.getSheetName()), new CellRangeAddressList(minRow, maxRow, parentCol, parentCol));
         parentValidation.createErrorBox("错误", "请选择正确的父级类型");
         parentValidation.setShowErrorBox(true);
-        parentValidation.setSuppressDropDownArrow(true);
         targetSheet.addValidationData(parentValidation);
+
         //子级校验，如需生成更多，用户手动拖拽下拉即可
-        for (int i = 0; i < maxRow; i++) {
-            DataValidation childValidation = helper.createValidation(helper.createFormulaListConstraint("INDIRECT(" + parentColIdentifier + "" + (i + 1 + 1) + ")"),
-                    new CellRangeAddressList(i + 1, i + 1, childCol, childCol));
+        for (int i = minRow; i < maxRow; i++) {
+            DataValidation childValidation = helper.createValidation(helper.createFormulaListConstraint("INDIRECT(" + parentColIdentifier + "" + (i + 1) + ")"),
+                    new CellRangeAddressList(i, i, childCol, childCol));
             childValidation.createErrorBox("错误", "请选择正确的子级类型");
             childValidation.setShowErrorBox(true);
             childValidation.setSuppressDropDownArrow(true);
@@ -119,16 +131,15 @@ public class ExcelValidationUtils {
         return hideSt;
     }
 
-
     /**
-     * 添加下拉列表中验证
+     * 添加简单下拉列表验证-下拉列表总内容不超过255字符
      *
      * @param st           sheet
      * @param dropDownList 下拉列表数据
      * @param firstCol     开始列，从0开始
      * @param lastCol      结束列，从0开始
      */
-    public static void addDropDownListValidation(XSSFSheet st, String[] dropDownList, int firstCol, int lastCol) {
+    public static void addSimpleDropDownListValidation(XSSFSheet st, String[] dropDownList, int firstCol, int lastCol) {
         XSSFDataValidationHelper helper = new XSSFDataValidationHelper(st);
         XSSFDataValidationConstraint constraint = (XSSFDataValidationConstraint) helper.createExplicitListConstraint(dropDownList);
         CellRangeAddressList addressList = new CellRangeAddressList(minRow, maxRow, firstCol, lastCol);
@@ -136,6 +147,35 @@ public class ExcelValidationUtils {
         validation.setSuppressDropDownArrow(true);
         validation.setShowErrorBox(true);
         st.addValidationData(validation);
+    }
+
+
+    /**
+     * 添加复杂下拉列表验证-下拉列表总内容允许超过255字符
+     *
+     * @param wb           xlsx
+     * @param dropDownList 下拉列表数据
+     * @param firstCol     开始列，从0开始
+     * @param lastCol      结束列，从0开始
+     */
+    public static void addComplexDropDownListValidation(XSSFWorkbook wb, XSSFSheet st, String[] dropDownList, int firstCol, int lastCol) {
+        XSSFSheet hideSt = wb.createSheet();
+        wb.setSheetHidden(wb.getSheetIndex(hideSt), !debugHideSheet);
+        XSSFDataValidationHelper helper = new XSSFDataValidationHelper(st);
+        for (int i = 0, length = dropDownList.length; i < length; i++) {
+            String value = dropDownList[i];
+            XSSFRow row = hideSt.createRow(i);
+            XSSFCell cell = row.createCell(0);
+            cell.setCellValue(value);
+        }
+        //解决长度为255的问题
+        Name name = wb.createName();
+        name.setNameName(hideSt.getSheetName());
+        name.setRefersToFormula(hideSt.getSheetName() + "!$A$1:$A$" + dropDownList.length);
+        DataValidation parentValidation = helper.createValidation(helper.createFormulaListConstraint(hideSt.getSheetName()), new CellRangeAddressList(minRow, maxRow, firstCol, lastCol));
+        parentValidation.createErrorBox("错误", "请选择正确的类型");
+        parentValidation.setShowErrorBox(true);
+        st.addValidationData(parentValidation);
     }
 
 
@@ -153,8 +193,7 @@ public class ExcelValidationUtils {
             char end = (char) (start + colCount - 1);
             return "$" + start + "$" + rowId + ":$" + end + "$" + rowId;
         } else {
-            char endPrefix = 'A';
-            char endSuffix = 'A';
+            char endPrefix = 'A', endSuffix;
             if ((colCount - 25) / 26 == 0 || colCount == 51) {// 26-51之间，包括边界（仅两次字母表计算）
                 if ((colCount - 25) % 26 == 0) {// 边界值
                     endSuffix = (char) ('A' + 25);
@@ -173,6 +212,4 @@ public class ExcelValidationUtils {
             return "$" + start + "$" + rowId + ":$" + endPrefix + endSuffix + "$" + rowId;
         }
     }
-
-
 }
