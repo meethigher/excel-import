@@ -22,7 +22,7 @@ public class ExcelValidationUtils {
 
     private static final int maxRow = 100;
 
-    private static final boolean debugHideSheet = true;
+    private static final boolean debugHideSheet = false;
 
 
     /**
@@ -52,6 +52,9 @@ public class ExcelValidationUtils {
         fontStyle.setFontName("微软雅黑");
         fontStyle.setFontHeightInPoints((short) 12);
         style.setFont(fontStyle);
+        //单元格格式为文本
+        XSSFDataFormat format = wb.createDataFormat();
+        style.setDataFormat(format.getFormat("@"));
         //写标题
         XSSFRow row = st.createRow(0);
         st.createFreezePane(0, 1, 0, 1);
@@ -60,6 +63,7 @@ public class ExcelValidationUtils {
             XSSFCell cell = row.createCell(i);
             st.setColumnWidth(i, value.length() * 1000);
             cell.setCellStyle(style);
+            st.setDefaultColumnStyle(i, style);
             cell.setCellValue(value);
         }
         return st;

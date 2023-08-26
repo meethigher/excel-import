@@ -33,9 +33,6 @@ public class TestExportExcelWithValidation {
         Map<String, List<String>> map = new HashMap<>();
         map.put("湖北省", Arrays.asList("武汉市", "襄阳市"));
         map.put("吉林省", Arrays.asList("长春市", "吉林市"));
-        for (int i = 0; i < 200; i++) {
-            map.put("吉林省" + i, Arrays.asList("长春市", "吉林市"));
-        }
         return map;
     }
 
