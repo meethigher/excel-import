@@ -69,6 +69,61 @@ public class ExcelValidationUtils {
         return st;
     }
 
+    /**
+     * 为xlsx添加一个sheet，并录入数据
+     *
+     * @param wb          xlsx
+     * @param sheetName   sheet名
+     * @param headers     首行标题头
+     * @param contentList 内容列表
+     * @return sheet
+     */
+    public static XSSFSheet addOneSheetWithContent(XSSFWorkbook wb, String sheetName, String[] headers, List<String[]> contentList) {
+        XSSFSheet st = wb.createSheet(sheetName);
+        //表头样式
+        CellStyle style = wb.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER); // 创建一个居中格式
+        //字体样式
+        Font fontStyle = wb.createFont();
+        fontStyle.setFontName("微软雅黑");
+        fontStyle.setFontHeightInPoints((short) 12);
+        style.setFont(fontStyle);
+        //单元格格式为文本
+        XSSFDataFormat format = wb.createDataFormat();
+        style.setDataFormat(format.getFormat("@"));
+        //写标题
+        XSSFRow row = st.createRow(0);
+        st.createFreezePane(0, 1, 0, 1);
+        for (int i = 0; i < headers.length; i++) {
+            String value = headers[i];
+            XSSFCell cell = row.createCell(i);
+            st.setColumnWidth(i, value.length() * 1000);
+            cell.setCellStyle(style);
+            st.setDefaultColumnStyle(i, style);
+            cell.setCellValue(value);
+        }
+        for (int i = 0; i < contentList.size(); i++) {
+            String[] arr = contentList.get(i);
+            XSSFRow dataRow = st.createRow(i + 1);
+            for (int j = 0; j < arr.length; j++) {
+                XSSFCell cell = dataRow.createCell(j, CellType.STRING);
+                cell.setCellValue(arr[j]);
+            }
+        }
+        autoSizeColumn(st, headers.length);
+        return st;
+    }
+
+    /**
+     * 根据内容自动调整列的宽度
+     * 对于存在中文的内容，计算的长度会存在不够精确的问题
+     */
+    public static void autoSizeColumn(XSSFSheet sheet, int headersLength) {
+        for (int i = 0; i < headersLength; i++) {
+            sheet.autoSizeColumn(i, true);
+        }
+    }
+
 
     /**
      * 添加两层级联数据
